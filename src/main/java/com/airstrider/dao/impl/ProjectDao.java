@@ -9,7 +9,9 @@ public class ProjectDao extends CommonDao {
 	@Override
 	public Project findById(Object object, EntityManager manager) {
 		System.out.println("-- ProjectDao.findById() start --");
-		return (Project)super.findById(object, manager);
+		Project result = (Project)super.findById(object, manager);
+		System.out.println("-- ProjectDao.findById() end --");
+		return result;
 	}//findById() end
 	
 	@Override

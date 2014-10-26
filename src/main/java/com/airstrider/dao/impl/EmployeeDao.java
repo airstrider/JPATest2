@@ -9,7 +9,9 @@ public class EmployeeDao extends CommonDao {
 	@Override
 	public Employee findById(Object object, EntityManager manager) {
 		System.out.println("-- EmployeeDao.findById() start --");
-		return (Employee)super.findById(object, manager);
+		Employee result = (Employee)super.findById(object, manager);
+		System.out.println("-- EmployeeDao.findById() end --");
+		return result;
 	}//findById() end
 	
 	@Override

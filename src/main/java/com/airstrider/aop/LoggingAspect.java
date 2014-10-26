@@ -1,4 +1,4 @@
-package com.airstrider.aspect;
+package com.airstrider.aop;
 
 import java.util.Arrays;
 

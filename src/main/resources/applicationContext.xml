@@ -13,11 +13,26 @@
 	http://www.springframework.org/schema/tx 
 	http://www.springframework.org/schema/tx/spring-tx-3.1.xsd">
 	
-	<aop:aspectj-autoproxy />
-
-	<!-- AspectJ -->
-	<bean id="logAspect" class="com.airstrider.aspect.LoggingAspect" />
+	<bean id="commonAdvisor" class="org.springframework.aop.support.RegexpMethodPointcutAdvisor">
+		<property name="patterns">
+			<list>
+				<value>.*Id.*</value>
+			</list>
+		</property>
+		<property name="advice" ref="hijackAroundMethodBeanAdvice" />
+	</bean>
 	
+ 	<bean id="commonServiceProxy" class="org.springframework.aop.framework.ProxyFactoryBean">
+ 		<property name="target" ref="commonService" />
+ 		<!-- interface 존재시에도 CGLIB 로 구동할 경우 설정하는 프로퍼티  -->
+ 		<property name="proxyTargetClass" value="true" />
+ 		<property name="interceptorNames">
+			<list>
+				<value>commonAdvisor</value>
+			</list>
+		</property>
+	</bean>
+ 	
 	<!-- 1.Transaction Manager 설정 -->
    	<bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
       	<property name="entityManagerFactory" ref="entityManagerFactory"/>
@@ -27,31 +42,18 @@
    	<bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
       	<property name="persistenceUnitName" value="AIRSTRIDER"/>
       	<property name="persistenceXmlLocation" value="META-INF/persistence.xml"/>
-	<!--
-		<property name="dataSource" ref="dataSource"/>
-	-->
 	</bean>	
-	<!-- 3.DataSource 설정 -->
-	<!--  
-	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
-	   	<property name="driverClassName" value="org.postgresql.Driver"/>
-      	<property name="url" value="jdbc:postgresql://127.0.0.1:5432/MyDB"/>
-      	<property name="username" value="postgres"/>
-      	<property name="password" value="walnutbird41"/>
-	</bean>	
-	-->
- 
+ 	
    	<!-- 5.Annotation 사용 설정 -->
    	<context:component-scan base-package="com.airstrider"/>
 
    	<!-- 4.JPA Annotation 사용 설정 -->
    	<bean class="org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor" />	
  
- 
    	<!-- 6.Annotation 기반의 Transaction 활성화 설정 --> 
    	<tx:annotation-driven />
 
-   	<!-- Service Bean -->
+   	<!-- 7.Service Bean -->
 	<bean id="commonService" class="com.airstrider.service.impl.CommonService">
 		<property name="commonDao" ref="commonDao" />
 		<property name="departmentDao" ref="departmentDao" />
@@ -64,5 +66,8 @@
 	<bean id="departmentDao" class="com.airstrider.dao.impl.DepartmentDao" />
 	<bean id="employeeDao" class="com.airstrider.dao.impl.EmployeeDao" />
 	<bean id="projectDao" class="com.airstrider.dao.impl.ProjectDao" />
+
+	<!-- AOP -->
+	<bean id="hijackAroundMethodBeanAdvice" class="com.airstrider.aop.HijackAroundMethod" />
 	   	
 </beans>

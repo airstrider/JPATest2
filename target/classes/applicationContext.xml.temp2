@@ -13,9 +13,13 @@
 	http://www.springframework.org/schema/tx 
 	http://www.springframework.org/schema/tx/spring-tx-3.1.xsd">
 	
+	<!-- 1.AOP 설정 -->
+	<bean id="hijackAroundMethodBeanAdvice" class="com.airstrider.aop.HijackAroundMethod" />
+
 	<bean id="commonAdvisor" class="org.springframework.aop.support.RegexpMethodPointcutAdvisor">
 		<property name="patterns">
 			<list>
+				<value>.*batch.*</value>
 				<value>.*Id.*</value>
 			</list>
 		</property>
@@ -33,27 +37,23 @@
 		</property>
 	</bean>
  	
-	<!-- 1.Transaction Manager 설정 -->
+	<!-- 2.Transaction Manager 설정 -->
    	<bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
       	<property name="entityManagerFactory" ref="entityManagerFactory"/>
    	</bean>	
 
-   	<!-- 2.Entity Manager Factory 설정 -->
+   	<!-- 3.Entity Manager Factory 설정 -->
    	<bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
       	<property name="persistenceUnitName" value="AIRSTRIDER"/>
       	<property name="persistenceXmlLocation" value="META-INF/persistence.xml"/>
 	</bean>	
  	
-   	<!-- 5.Annotation 사용 설정 -->
-   	<context:component-scan base-package="com.airstrider"/>
-
    	<!-- 4.JPA Annotation 사용 설정 -->
    	<bean class="org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor" />	
- 
-   	<!-- 6.Annotation 기반의 Transaction 활성화 설정 --> 
-   	<tx:annotation-driven />
 
-   	<!-- 7.Service Bean -->
+   	<context:component-scan base-package="com.airstrider"/>
+ 
+   	<!-- 5.Service Bean 설정 -->
 	<bean id="commonService" class="com.airstrider.service.impl.CommonService">
 		<property name="commonDao" ref="commonDao" />
 		<property name="departmentDao" ref="departmentDao" />
@@ -61,13 +61,27 @@
 		<property name="projectDao" ref="projectDao" />
 	</bean> 
 	
-   	<!-- Data Access Object -->
+   	<!-- Data Access Object Bean 설정 -->
 	<bean id="commonDao" class="com.airstrider.dao.impl.CommonDao" />
 	<bean id="departmentDao" class="com.airstrider.dao.impl.DepartmentDao" />
 	<bean id="employeeDao" class="com.airstrider.dao.impl.EmployeeDao" />
 	<bean id="projectDao" class="com.airstrider.dao.impl.ProjectDao" />
 
-	<!-- AOP -->
-	<bean id="hijackAroundMethodBeanAdvice" class="com.airstrider.aop.HijackAroundMethod" />
-	   	
+   	<!-- 6.Annotation 기반의 Transaction 활성화 설정 --> 
+   	<tx:annotation-driven />
+
+<!--  
+-->	
+	<aop:config>
+		<aop:advisor advice-ref="txAdvice" pointcut=".*Service.*(..)" />
+	</aop:config>
+
+	<tx:advice id="txAdvice" transaction-manager="transactionManager">
+		<tx:attributes>
+			<tx:method name="find*" propagation="REQUIRED" read-only="true" />
+			<tx:method name="create" rollback-for="Exception"/>
+			<tx:method name="udate"  rollback-for="Exception"/>
+			<tx:method name="delete" rollback-for="Exception"/>
+		</tx:attributes>
+	</tx:advice>
 </beans>

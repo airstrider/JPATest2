@@ -14,16 +14,12 @@ public class CommonDao implements ICommonDao {
 		System.out.println("--- CommonDao.findById() start ---");
 		Object result = null;
 		
-		//1. Open a connection and get an entity manager object
-		manager = EntityManagerUtil.getEntityManager();
-		//2. Start transaction
-		manager.getTransaction().begin();
 		//3. Find the result by id search
 		try {
 			if (object instanceof Department) {
 				result = manager.find(Department.class, ((Department)object).getId());
-				System.out.println("result.getId(): "+((Department)result).getId());
-				System.out.println("result.getName(): "+((Department)result).getName());
+//				System.out.println("result.getId(): "+((Department)result).getId());
+//				System.out.println("result.getName(): "+((Department)result).getName());
 			} else if (object instanceof Employee) {
 				result = manager.find(Employee.class, ((Employee)object).getId());
 			} else if (object instanceof Project) {
@@ -33,10 +29,6 @@ public class CommonDao implements ICommonDao {
 			System.err.println("\n***[ Exception: "+e.getMessage()+" ]***\n");
 			System.err.println("\n***[ No such entity found ]***\n");
 		}
-		//4. Commit the transaction
-		manager.getTransaction().commit();
-		//5. Close the connection
-		manager.close();
 		System.out.println("--- CommonDao.findById() end ---");
 		
 		return result;
@@ -44,10 +36,6 @@ public class CommonDao implements ICommonDao {
 
 	public void create(Object object, EntityManager manager) {
 		System.out.println("--- CommonDao.create() start ---");
-		//1. Open a connection and get an entity manager object
-		manager = EntityManagerUtil.getEntityManager();
-		//2. Start transaction
-		manager.getTransaction().begin();
 		//3. Check the entity to persist
 		if (object instanceof Department) {
 			Department result = manager.find(Department.class, ((Department)object).getId());
@@ -76,12 +64,6 @@ public class CommonDao implements ICommonDao {
 		} else {
 			System.err.println("\n***[ No such type entity found ]***\n");			
 		}
-
-		//5. Commit transaction
-		manager.getTransaction().commit();
-		//6. Close connection
-//		EntityManagerUtil.closeConnection();
-		manager.close();
 		System.out.println("--- CommonDao.create() end ---");
 	}
 	
